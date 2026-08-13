@@ -13,6 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as StudentRouteImport } from './routes/student'
+import { Route as StudentIndexRouteImport } from './routes/student.index'
+import { Route as StudentApplyRouteImport } from './routes/student.apply'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +37,38 @@ const SetupRoute = SetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudentRoute = StudentRouteImport.update({
+  id: '/student',
+  path: '/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentIndexRoute = StudentIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentApplyRoute = StudentApplyRouteImport.update({
+  id: '/apply',
+  path: '/apply',
+  getParentRoute: () => StudentRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
+  '/student': typeof StudentRouteWithChildren
+  '/student/apply': typeof StudentApplyRoute
+  '/student/': typeof StudentIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
+  '/student/apply': typeof StudentApplyRoute
+  '/student': typeof StudentIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +76,31 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
+  '/student': typeof StudentRouteWithChildren
+  '/student/apply': typeof StudentApplyRoute
+  '/student/': typeof StudentIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/register' | '/setup'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/register'
+    | '/setup'
+    | '/student'
+    | '/student/apply'
+    | '/student/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/register' | '/setup'
-  id: '__root__' | '/' | '/auth' | '/register' | '/setup'
+  to: '/' | '/auth' | '/register' | '/setup' | '/student/apply' | '/student'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/register'
+    | '/setup'
+    | '/student'
+    | '/student/apply'
+    | '/student/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +108,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   RegisterRoute: typeof RegisterRoute
   SetupRoute: typeof SetupRoute
+  StudentRoute: typeof StudentRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -99,14 +141,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/student': {
+      id: '/student'
+      path: '/student'
+      fullPath: '/student'
+      preLoaderRoute: typeof StudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student/': {
+      id: '/student/'
+      path: '/'
+      fullPath: '/student/'
+      preLoaderRoute: typeof StudentIndexRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/apply': {
+      id: '/student/apply'
+      path: '/apply'
+      fullPath: '/student/apply'
+      preLoaderRoute: typeof StudentApplyRouteImport
+      parentRoute: typeof StudentRoute
+    }
   }
 }
+
+interface StudentRouteChildren {
+  StudentApplyRoute: typeof StudentApplyRoute
+  StudentIndexRoute: typeof StudentIndexRoute
+}
+
+const StudentRouteChildren: StudentRouteChildren = {
+  StudentApplyRoute: StudentApplyRoute,
+  StudentIndexRoute: StudentIndexRoute,
+}
+
+const StudentRouteWithChildren =
+  StudentRoute._addFileChildren(StudentRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   RegisterRoute: RegisterRoute,
   SetupRoute: SetupRoute,
+  StudentRoute: StudentRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
