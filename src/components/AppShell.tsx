@@ -193,7 +193,7 @@ export function AppShell({
 }: {
   role: AppRole;
   title: string;
-  description?: string;
+  description?: string | undefined;
   children: ReactNode;
 }) {
   const { profile, signOut } = useAuth();

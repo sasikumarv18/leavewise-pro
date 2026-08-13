@@ -100,6 +100,8 @@ function ApplyLeave() {
       const res = await supabase
         .from("leave_applications")
         .insert({
+          // application_number, number_of_days and status are set by a DB trigger
+          application_number: "",
           student_id: student.data.id,
           leave_type: parsed.data.leaveType,
           start_date: parsed.data.startDate,
