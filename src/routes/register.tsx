@@ -51,19 +51,19 @@ const EMPTY = {
 
 function RegisterPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState<Record<string, string>>(EMPTY);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [form, setForm] = useState(EMPTY);
+  const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [busy, setBusy] = useState(false);
 
   const departments = useQuery({ queryKey: ["departments"], queryFn: fetchDepartments });
   const classes = useQuery({ queryKey: ["classes"], queryFn: fetchClasses });
 
   const classOptions = useMemo(
-    () => (classes.data ?? []).filter((c) => c.department_id === form["departmentId"]),
+    () => (classes.data ?? []).filter((c) => c.department_id === form.departmentId),
     [classes.data, form],
   );
 
-  const set = (key: string, value: string) =>
+  const set = (key: keyof typeof EMPTY, value: string) =>
     setForm((f) => ({ ...f, [key]: value, ...(key === "departmentId" ? { classId: "" } : {}) }));
 
   async function handleSubmit(e: React.FormEvent) {
@@ -116,25 +116,25 @@ function RegisterPage() {
           <section className="space-y-4">
             <h2 className="font-display text-lg font-semibold">Personal information</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Full name" error={errors["fullName"]}>
-                <Input value={form["fullName"]} onChange={(e) => set("fullName", e.target.value)} />
+              <Field label="Full name" error={errors.fullName}>
+                <Input value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
               </Field>
-              <Field label="Email address" error={errors["email"]}>
+              <Field label="Email address" error={errors.email}>
                 <Input
                   type="email"
-                  value={form["email"]}
+                  value={form.email}
                   onChange={(e) => set("email", e.target.value)}
                 />
               </Field>
-              <Field label="Register number" error={errors["registerNumber"]}>
+              <Field label="Register number" error={errors.registerNumber}>
                 <Input
-                  value={form["registerNumber"]}
+                  value={form.registerNumber}
                   placeholder="23IT101"
                   onChange={(e) => set("registerNumber", e.target.value.toUpperCase())}
                 />
               </Field>
-              <Field label="Student type" error={errors["studentType"]}>
-                <Select value={form["studentType"]} onValueChange={(v) => set("studentType", v)}>
+              <Field label="Student type" error={errors.studentType}>
+                <Select value={form.studentType} onValueChange={(v) => set("studentType", v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -144,17 +144,17 @@ function RegisterPage() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Password" error={errors["password"]}>
+              <Field label="Password" error={errors.password}>
                 <Input
                   type="password"
-                  value={form["password"]}
+                  value={form.password}
                   onChange={(e) => set("password", e.target.value)}
                 />
               </Field>
-              <Field label="Confirm password" error={errors["confirmPassword"]}>
+              <Field label="Confirm password" error={errors.confirmPassword}>
                 <Input
                   type="password"
-                  value={form["confirmPassword"]}
+                  value={form.confirmPassword}
                   onChange={(e) => set("confirmPassword", e.target.value)}
                 />
               </Field>
@@ -164,8 +164,8 @@ function RegisterPage() {
           <section className="space-y-4">
             <h2 className="font-display text-lg font-semibold">Academic information</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Department" error={errors["departmentId"]}>
-                <Select value={form["departmentId"]} onValueChange={(v) => set("departmentId", v)}>
+              <Field label="Department" error={errors.departmentId}>
+                <Select value={form.departmentId} onValueChange={(v) => set("departmentId", v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select department" />
                   </SelectTrigger>
@@ -178,15 +178,15 @@ function RegisterPage() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Class" error={errors["classId"]}>
+              <Field label="Class" error={errors.classId}>
                 <Select
-                  value={form["classId"]}
+                  value={form.classId}
                   onValueChange={(v) => setForm((f) => ({ ...f, classId: v }))}
-                  disabled={!form["departmentId"]}
+                  disabled={!form.departmentId}
                 >
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={form["departmentId"] ? "Select class" : "Select a department first"}
+                      placeholder={form.departmentId ? "Select class" : "Select a department first"}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -225,7 +225,7 @@ function Field({
   children,
 }: {
   label: string;
-  error?: string;
+  error?: string | undefined;
   children: React.ReactNode;
 }) {
   return (
