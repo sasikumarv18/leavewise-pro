@@ -17,7 +17,11 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as StudentRouteImport } from './routes/student'
 import { Route as SubadminRouteImport } from './routes/subadmin'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminDepartmentsRouteImport } from './routes/admin.departments'
 import { Route as AdminLeavesRouteImport } from './routes/admin.leaves'
+import { Route as AdminStudentsRouteImport } from './routes/admin.students'
+import { Route as AdminSubadminsRouteImport } from './routes/admin.subadmins'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
 import { Route as StudentApplyRouteImport } from './routes/student.apply'
 import { Route as StudentLeavesRouteImport } from './routes/student.leaves'
@@ -65,9 +69,29 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDepartmentsRoute = AdminDepartmentsRouteImport.update({
+  id: '/departments',
+  path: '/departments',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLeavesRoute = AdminLeavesRouteImport.update({
   id: '/leaves',
   path: '/leaves',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminStudentsRoute = AdminStudentsRouteImport.update({
+  id: '/students',
+  path: '/students',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSubadminsRoute = AdminSubadminsRouteImport.update({
+  id: '/subadmins',
+  path: '/subadmins',
   getParentRoute: () => AdminRoute,
 } as any)
 const StudentIndexRoute = StudentIndexRouteImport.update({
@@ -109,7 +133,11 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/student': typeof StudentRouteWithChildren
   '/subadmin': typeof SubadminRouteWithChildren
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/departments': typeof AdminDepartmentsRoute
   '/admin/leaves': typeof AdminLeavesRoute
+  '/admin/students': typeof AdminStudentsRoute
+  '/admin/subadmins': typeof AdminSubadminsRoute
   '/student/apply': typeof StudentApplyRoute
   '/student/leaves': typeof StudentLeavesRoute
   '/student/profile': typeof StudentProfileRoute
@@ -123,7 +151,11 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/departments': typeof AdminDepartmentsRoute
   '/admin/leaves': typeof AdminLeavesRoute
+  '/admin/students': typeof AdminStudentsRoute
+  '/admin/subadmins': typeof AdminSubadminsRoute
   '/student/apply': typeof StudentApplyRoute
   '/student/leaves': typeof StudentLeavesRoute
   '/student/profile': typeof StudentProfileRoute
@@ -141,7 +173,11 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/student': typeof StudentRouteWithChildren
   '/subadmin': typeof SubadminRouteWithChildren
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/departments': typeof AdminDepartmentsRoute
   '/admin/leaves': typeof AdminLeavesRoute
+  '/admin/students': typeof AdminStudentsRoute
+  '/admin/subadmins': typeof AdminSubadminsRoute
   '/student/apply': typeof StudentApplyRoute
   '/student/leaves': typeof StudentLeavesRoute
   '/student/profile': typeof StudentProfileRoute
@@ -160,7 +196,11 @@ export interface FileRouteTypes {
     | '/setup'
     | '/student'
     | '/subadmin'
+    | '/admin/audit'
+    | '/admin/departments'
     | '/admin/leaves'
+    | '/admin/students'
+    | '/admin/subadmins'
     | '/student/apply'
     | '/student/leaves'
     | '/student/profile'
@@ -174,7 +214,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/register'
     | '/setup'
+    | '/admin/audit'
+    | '/admin/departments'
     | '/admin/leaves'
+    | '/admin/students'
+    | '/admin/subadmins'
     | '/student/apply'
     | '/student/leaves'
     | '/student/profile'
@@ -191,7 +235,11 @@ export interface FileRouteTypes {
     | '/setup'
     | '/student'
     | '/subadmin'
+    | '/admin/audit'
+    | '/admin/departments'
     | '/admin/leaves'
+    | '/admin/students'
+    | '/admin/subadmins'
     | '/student/apply'
     | '/student/leaves'
     | '/student/profile'
@@ -269,11 +317,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/departments': {
+      id: '/admin/departments'
+      path: '/departments'
+      fullPath: '/admin/departments'
+      preLoaderRoute: typeof AdminDepartmentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/leaves': {
       id: '/admin/leaves'
       path: '/leaves'
       fullPath: '/admin/leaves'
       preLoaderRoute: typeof AdminLeavesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/students': {
+      id: '/admin/students'
+      path: '/students'
+      fullPath: '/admin/students'
+      preLoaderRoute: typeof AdminStudentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/subadmins': {
+      id: '/admin/subadmins'
+      path: '/subadmins'
+      fullPath: '/admin/subadmins'
+      preLoaderRoute: typeof AdminSubadminsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/student/': {
@@ -322,12 +398,20 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminDepartmentsRoute: typeof AdminDepartmentsRoute
   AdminLeavesRoute: typeof AdminLeavesRoute
+  AdminStudentsRoute: typeof AdminStudentsRoute
+  AdminSubadminsRoute: typeof AdminSubadminsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditRoute: AdminAuditRoute,
+  AdminDepartmentsRoute: AdminDepartmentsRoute,
   AdminLeavesRoute: AdminLeavesRoute,
+  AdminStudentsRoute: AdminStudentsRoute,
+  AdminSubadminsRoute: AdminSubadminsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
