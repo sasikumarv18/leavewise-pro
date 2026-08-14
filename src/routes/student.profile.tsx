@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useAuth } from "@/lib/auth";
-import { fetchMyStudent } from "@/lib/queries";
+import { fetchClasses, fetchDepartments, fetchMyStudent } from "@/lib/queries";
 
 export const Route = createFileRoute("/student/profile")({
   head: () => ({
@@ -31,14 +31,20 @@ function StudentProfile() {
     queryFn: () => fetchMyStudent(userId!),
   });
 
+  const departments = useQuery({ queryKey: ["departments"], queryFn: fetchDepartments });
+  const classes = useQuery({ queryKey: ["classes"], queryFn: fetchClasses });
+
   const s = student.data;
+  const departmentName =
+    (departments.data ?? []).find((d) => d.id === s?.department_id)?.department_name ?? "—";
+  const className = (classes.data ?? []).find((c) => c.id === s?.class_id)?.class_name ?? "—";
   const rows: Array<[string, string]> = [
     ["Full name", profile?.full_name ?? "—"],
     ["Email address", profile?.email ?? "—"],
     ["Register number", s?.register_number ?? "—"],
     ["Student type", s?.student_type === "DAY_SCHOLAR" ? "Day Scholar" : "Hosteller"],
-    ["Department", s?.departments?.department_name ?? "—"],
-    ["Class", s?.classes?.class_name ?? "—"],
+    ["Department", departmentName],
+    ["Class", className],
   ];
 
   return (
@@ -46,7 +52,7 @@ function StudentProfile() {
       <div className="surface-card mx-auto max-w-2xl p-6 sm:p-8">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg font-semibold">Account details</h2>
-          {profile?.account_status && <StatusBadge value={profile.account_status} />}
+          {profile?.status && <StatusBadge value={profile.status} />}
         </div>
         <dl className="mt-6 divide-y divide-border">
           {rows.map(([label, value]) => (
