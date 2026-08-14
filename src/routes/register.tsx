@@ -116,24 +116,24 @@ function RegisterPage() {
           <section className="space-y-4">
             <h2 className="font-display text-lg font-semibold">Personal information</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Full name" error={errors.fullName}>
+              <Field label="Full name" error={errors["fullName"]}>
                 <Input value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
               </Field>
-              <Field label="Email address" error={errors.email}>
+              <Field label="Email address" error={errors["email"]}>
                 <Input
                   type="email"
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
                 />
               </Field>
-              <Field label="Register number" error={errors.registerNumber}>
+              <Field label="Register number" error={errors["registerNumber"]}>
                 <Input
                   value={form.registerNumber}
                   placeholder="23IT101"
                   onChange={(e) => set("registerNumber", e.target.value.toUpperCase())}
                 />
               </Field>
-              <Field label="Student type" error={errors.studentType}>
+              <Field label="Student type" error={errors["studentType"]}>
                 <Select value={form.studentType} onValueChange={(v) => set("studentType", v)}>
                   <SelectTrigger>
                     <SelectValue />
@@ -144,14 +144,14 @@ function RegisterPage() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Password" error={errors.password}>
+              <Field label="Password" error={errors["password"]}>
                 <Input
                   type="password"
                   value={form.password}
                   onChange={(e) => set("password", e.target.value)}
                 />
               </Field>
-              <Field label="Confirm password" error={errors.confirmPassword}>
+              <Field label="Confirm password" error={errors["confirmPassword"]}>
                 <Input
                   type="password"
                   value={form.confirmPassword}
@@ -164,7 +164,7 @@ function RegisterPage() {
           <section className="space-y-4">
             <h2 className="font-display text-lg font-semibold">Academic information</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Department" error={errors.departmentId}>
+              <Field label="Department" error={errors["departmentId"]}>
                 <Select value={form.departmentId} onValueChange={(v) => set("departmentId", v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select department" />
@@ -178,7 +178,7 @@ function RegisterPage() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Class" error={errors.classId}>
+              <Field label="Class" error={errors["classId"]}>
                 <Select
                   value={form.classId}
                   onValueChange={(v) => setForm((f) => ({ ...f, classId: v }))}
