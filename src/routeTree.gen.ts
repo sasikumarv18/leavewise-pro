@@ -16,6 +16,8 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as StudentRouteImport } from './routes/student'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
 import { Route as StudentApplyRouteImport } from './routes/student.apply'
+import { Route as StudentLeavesRouteImport } from './routes/student.leaves'
+import { Route as StudentProfileRouteImport } from './routes/student.profile'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +54,16 @@ const StudentApplyRoute = StudentApplyRouteImport.update({
   path: '/apply',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentLeavesRoute = StudentLeavesRouteImport.update({
+  id: '/leaves',
+  path: '/leaves',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentProfileRoute = StudentProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => StudentRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +72,8 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/student': typeof StudentRouteWithChildren
   '/student/apply': typeof StudentApplyRoute
+  '/student/leaves': typeof StudentLeavesRoute
+  '/student/profile': typeof StudentProfileRoute
   '/student/': typeof StudentIndexRoute
 }
 export interface FileRoutesByTo {
@@ -68,6 +82,8 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
   '/student/apply': typeof StudentApplyRoute
+  '/student/leaves': typeof StudentLeavesRoute
+  '/student/profile': typeof StudentProfileRoute
   '/student': typeof StudentIndexRoute
 }
 export interface FileRoutesById {
@@ -78,6 +94,8 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/student': typeof StudentRouteWithChildren
   '/student/apply': typeof StudentApplyRoute
+  '/student/leaves': typeof StudentLeavesRoute
+  '/student/profile': typeof StudentProfileRoute
   '/student/': typeof StudentIndexRoute
 }
 export interface FileRouteTypes {
@@ -89,9 +107,19 @@ export interface FileRouteTypes {
     | '/setup'
     | '/student'
     | '/student/apply'
+    | '/student/leaves'
+    | '/student/profile'
     | '/student/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/register' | '/setup' | '/student/apply' | '/student'
+  to:
+    | '/'
+    | '/auth'
+    | '/register'
+    | '/setup'
+    | '/student/apply'
+    | '/student/leaves'
+    | '/student/profile'
+    | '/student'
   id:
     | '__root__'
     | '/'
@@ -100,6 +128,8 @@ export interface FileRouteTypes {
     | '/setup'
     | '/student'
     | '/student/apply'
+    | '/student/leaves'
+    | '/student/profile'
     | '/student/'
   fileRoutesById: FileRoutesById
 }
@@ -162,16 +192,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentApplyRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/leaves': {
+      id: '/student/leaves'
+      path: '/leaves'
+      fullPath: '/student/leaves'
+      preLoaderRoute: typeof StudentLeavesRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/profile': {
+      id: '/student/profile'
+      path: '/profile'
+      fullPath: '/student/profile'
+      preLoaderRoute: typeof StudentProfileRouteImport
+      parentRoute: typeof StudentRoute
+    }
   }
 }
 
 interface StudentRouteChildren {
   StudentApplyRoute: typeof StudentApplyRoute
+  StudentLeavesRoute: typeof StudentLeavesRoute
+  StudentProfileRoute: typeof StudentProfileRoute
   StudentIndexRoute: typeof StudentIndexRoute
 }
 
 const StudentRouteChildren: StudentRouteChildren = {
   StudentApplyRoute: StudentApplyRoute,
+  StudentLeavesRoute: StudentLeavesRoute,
+  StudentProfileRoute: StudentProfileRoute,
   StudentIndexRoute: StudentIndexRoute,
 }
 
