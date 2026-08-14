@@ -10,11 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as StudentRouteImport } from './routes/student'
 import { Route as SubadminRouteImport } from './routes/subadmin'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminLeavesRouteImport } from './routes/admin.leaves'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
 import { Route as StudentApplyRouteImport } from './routes/student.apply'
 import { Route as StudentLeavesRouteImport } from './routes/student.leaves'
@@ -25,6 +28,11 @@ import { Route as SubadminRequestsRouteImport } from './routes/subadmin.requests
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -51,6 +59,16 @@ const SubadminRoute = SubadminRouteImport.update({
   id: '/subadmin',
   path: '/subadmin',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLeavesRoute = AdminLeavesRouteImport.update({
+  id: '/leaves',
+  path: '/leaves',
+  getParentRoute: () => AdminRoute,
 } as any)
 const StudentIndexRoute = StudentIndexRouteImport.update({
   id: '/',
@@ -85,15 +103,18 @@ const SubadminRequestsRoute = SubadminRequestsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
   '/student': typeof StudentRouteWithChildren
   '/subadmin': typeof SubadminRouteWithChildren
+  '/admin/leaves': typeof AdminLeavesRoute
   '/student/apply': typeof StudentApplyRoute
   '/student/leaves': typeof StudentLeavesRoute
   '/student/profile': typeof StudentProfileRoute
   '/subadmin/requests': typeof SubadminRequestsRoute
+  '/admin/': typeof AdminIndexRoute
   '/student/': typeof StudentIndexRoute
   '/subadmin/': typeof SubadminIndexRoute
 }
@@ -102,25 +123,30 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
+  '/admin/leaves': typeof AdminLeavesRoute
   '/student/apply': typeof StudentApplyRoute
   '/student/leaves': typeof StudentLeavesRoute
   '/student/profile': typeof StudentProfileRoute
   '/subadmin/requests': typeof SubadminRequestsRoute
+  '/admin': typeof AdminIndexRoute
   '/student': typeof StudentIndexRoute
   '/subadmin': typeof SubadminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
   '/student': typeof StudentRouteWithChildren
   '/subadmin': typeof SubadminRouteWithChildren
+  '/admin/leaves': typeof AdminLeavesRoute
   '/student/apply': typeof StudentApplyRoute
   '/student/leaves': typeof StudentLeavesRoute
   '/student/profile': typeof StudentProfileRoute
   '/subadmin/requests': typeof SubadminRequestsRoute
+  '/admin/': typeof AdminIndexRoute
   '/student/': typeof StudentIndexRoute
   '/subadmin/': typeof SubadminIndexRoute
 }
@@ -128,15 +154,18 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/register'
     | '/setup'
     | '/student'
     | '/subadmin'
+    | '/admin/leaves'
     | '/student/apply'
     | '/student/leaves'
     | '/student/profile'
     | '/subadmin/requests'
+    | '/admin/'
     | '/student/'
     | '/subadmin/'
   fileRoutesByTo: FileRoutesByTo
@@ -145,30 +174,36 @@ export interface FileRouteTypes {
     | '/auth'
     | '/register'
     | '/setup'
+    | '/admin/leaves'
     | '/student/apply'
     | '/student/leaves'
     | '/student/profile'
     | '/subadmin/requests'
+    | '/admin'
     | '/student'
     | '/subadmin'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/register'
     | '/setup'
     | '/student'
     | '/subadmin'
+    | '/admin/leaves'
     | '/student/apply'
     | '/student/leaves'
     | '/student/profile'
     | '/subadmin/requests'
+    | '/admin/'
     | '/student/'
     | '/subadmin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   RegisterRoute: typeof RegisterRoute
   SetupRoute: typeof SetupRoute
@@ -183,6 +218,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -219,6 +261,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/subadmin'
       preLoaderRoute: typeof SubadminRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/leaves': {
+      id: '/admin/leaves'
+      path: '/leaves'
+      fullPath: '/admin/leaves'
+      preLoaderRoute: typeof AdminLeavesRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/student/': {
       id: '/student/'
@@ -265,6 +321,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminLeavesRoute: typeof AdminLeavesRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminLeavesRoute: AdminLeavesRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface StudentRouteChildren {
   StudentApplyRoute: typeof StudentApplyRoute
   StudentLeavesRoute: typeof StudentLeavesRoute
@@ -298,6 +366,7 @@ const SubadminRouteWithChildren = SubadminRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   RegisterRoute: RegisterRoute,
   SetupRoute: SetupRoute,

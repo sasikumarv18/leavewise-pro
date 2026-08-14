@@ -45,12 +45,8 @@ function AdminDashboard() {
 
   const seed = useMutation({
     mutationFn: () => seedDemoData(),
-    onSuccess: (res) => {
-      if (!res.ok) {
-        toast.error(res.error);
-        return;
-      }
-      toast.success(res.message ?? "Demo data created.");
+    onSuccess: () => {
+      toast.success("Demo data created. Save the credentials shown below.");
       void qc.invalidateQueries();
     },
     onError: () => toast.error("Demo data could not be created."),
@@ -112,11 +108,11 @@ function AdminDashboard() {
             )}
             Generate demo data
           </Button>
-          {seed.data && seed.data.ok && seed.data.credentials && (
+          {seed.data?.credentials && (
             <ul className="mt-4 space-y-2 text-xs">
               {seed.data.credentials.map((c) => (
                 <li key={c.email} className="rounded-lg bg-muted/60 px-3 py-2">
-                  <p className="font-medium">{c.label}</p>
+                  <p className="font-medium">{c.name} · {c.role}</p>
                   <p className="font-mono">{c.email}</p>
                   <p className="font-mono">{c.password}</p>
                 </li>
