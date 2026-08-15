@@ -311,3 +311,158 @@ export const resolveLoginEmail = createServerFn({ method: "POST" })
       .maybeSingle();
     return { email: profile.data?.email ?? null };
   });
+
+/* ---------------------------------------------------------------------- */
+/* Staff (Admin / Sub-Admin) account requests — approval queue             */
+/* ---------------------------------------------------------------------- */
+
+const staffRequestSchema = z.object({
+  fullName: z.string().trim().min(3).max(100),
+  email: z.string().trim().email().max(255),
+  password: passwordSchema,
+  requestedRole: z.enum(["ADMIN", "SUB_ADMIN"]),
+  message: z.string().trim().max(500).optional(),
+});
+
+/** Public: anyone can apply for a staff account. It stays inactive until an admin approves. */
+export const requestStaffAccount = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => staffRequestSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const email = data.email.toLowerCase();
+
+    const created = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName },
+    });
+    if (created.error || !created.data.user) {
+      const msg = created.error?.message ?? "Could not create the account.";
+      return {
+        ok: false as const,
+        error: /already/i.test(msg) ? "This email address is already registered." : msg,
+      };
+    }
+    const userId = created.data.user.id;
+    await supabaseAdmin
+      .from("profiles")
+      .insert({ id: userId, full_name: data.fullName, email, status: "INACTIVE" });
+    const req = await supabaseAdmin.from("staff_requests").insert({
+      user_id: userId,
+      full_name: data.fullName,
+      email,
+      requested_role: data.requestedRole,
+      message: data.message ?? null,
+    });
+    if (req.error) {
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      return { ok: false as const, error: req.error.message };
+    }
+    await supabaseAdmin.rpc("log_audit", {
+      _actor: userId,
+      _action: "STAFF_ACCESS_REQUESTED",
+      _entity: "staff_requests",
+      _entity_id: userId,
+      _details: { email, requested_role: data.requestedRole } as never,
+    });
+    return { ok: true as const };
+  });
+
+/** The signed-in user's own staff request (used by the pending-approval screen). */
+export const myStaffRequest = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data } = await context.supabase
+      .from("staff_requests")
+      .select("id, requested_role, status, review_remark, created_at, reviewed_at")
+      .eq("user_id", context.userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return { request: data ?? null };
+  });
+
+export const listStaffRequests = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { data, error } = await context.supabase
+      .from("staff_requests")
+      .select(
+        "id, user_id, full_name, email, requested_role, message, status, review_remark, created_at, reviewed_at",
+      )
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return { requests: data ?? [] };
+  });
+
+export const reviewStaffRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        requestId: z.string().uuid(),
+        decision: z.enum(["APPROVED", "REJECTED"]),
+        remark: z.string().trim().max(500).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    if (data.decision === "REJECTED" && !data.remark) {
+      return { ok: false as const, error: "A reason is required when rejecting a request." };
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const existing = await supabaseAdmin
+      .from("staff_requests")
+      .select("id, user_id, requested_role, status")
+      .eq("id", data.requestId)
+      .maybeSingle();
+    if (!existing.data) return { ok: false as const, error: "Request not found." };
+    if (existing.data.status !== "PENDING") {
+      return { ok: false as const, error: "This request has already been reviewed." };
+    }
+
+    if (data.decision === "APPROVED") {
+      const grant = await supabaseAdmin
+        .from("user_roles")
+        .insert({ user_id: existing.data.user_id, role: existing.data.requested_role });
+      if (grant.error && !/duplicate/i.test(grant.error.message)) {
+        return { ok: false as const, error: grant.error.message };
+      }
+      await supabaseAdmin
+        .from("profiles")
+        .update({ status: "ACTIVE" })
+        .eq("id", existing.data.user_id);
+    }
+
+    const upd = await supabaseAdmin
+      .from("staff_requests")
+      .update({
+        status: data.decision,
+        review_remark: data.remark ?? null,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", data.requestId);
+    if (upd.error) return { ok: false as const, error: upd.error.message };
+
+    await supabaseAdmin.from("notifications").insert({
+      recipient_user_id: existing.data.user_id,
+      title: data.decision === "APPROVED" ? "Staff access approved" : "Staff access rejected",
+      message:
+        data.decision === "APPROVED"
+          ? `Your ${existing.data.requested_role === "ADMIN" ? "Administrator" : "Sub-Admin"} account has been approved. You can now sign in.`
+          : `Your staff account request was rejected.${data.remark ? ` Reason: ${data.remark}` : ""}`,
+    });
+
+    await supabaseAdmin.rpc("log_audit", {
+      _actor: context.userId,
+      _action: `STAFF_REQUEST_${data.decision}`,
+      _entity: "staff_requests",
+      _entity_id: data.requestId,
+      _details: { role: existing.data.requested_role, remark: data.remark ?? null } as never,
+    });
+    return { ok: true as const };
+  });
