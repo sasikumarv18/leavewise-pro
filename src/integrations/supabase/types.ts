@@ -221,6 +221,51 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_requests: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          message: string | null
+          requested_role: Database["public"]["Enums"]["app_role"]
+          review_remark: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["staff_request_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          message?: string | null
+          requested_role: Database["public"]["Enums"]["app_role"]
+          review_remark?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["staff_request_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          message?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"]
+          review_remark?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["staff_request_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           class_id: string
@@ -319,6 +364,7 @@ export type Database = {
       app_role: "ADMIN" | "SUB_ADMIN" | "STUDENT"
       leave_status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"
       leave_type: "MEDICAL" | "PERSONAL" | "EMERGENCY" | "OTHER"
+      staff_request_status: "PENDING" | "APPROVED" | "REJECTED"
       student_type: "HOSTELLER" | "DAY_SCHOLAR"
     }
     CompositeTypes: {
@@ -451,6 +497,7 @@ export const Constants = {
       app_role: ["ADMIN", "SUB_ADMIN", "STUDENT"],
       leave_status: ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
       leave_type: ["MEDICAL", "PERSONAL", "EMERGENCY", "OTHER"],
+      staff_request_status: ["PENDING", "APPROVED", "REJECTED"],
       student_type: ["HOSTELLER", "DAY_SCHOLAR"],
     },
   },
