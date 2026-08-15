@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as StaffRegisterRouteImport } from './routes/staff-register'
 import { Route as StudentRouteImport } from './routes/student'
 import { Route as SubadminRouteImport } from './routes/subadmin'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -52,6 +53,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffRegisterRoute = StaffRegisterRouteImport.update({
+  id: '/staff-register',
+  path: '/staff-register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StudentRoute = StudentRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
+  '/staff-register': typeof StaffRegisterRoute
   '/student': typeof StudentRouteWithChildren
   '/subadmin': typeof SubadminRouteWithChildren
   '/admin/audit': typeof AdminAuditRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
+  '/staff-register': typeof StaffRegisterRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/departments': typeof AdminDepartmentsRoute
   '/admin/leaves': typeof AdminLeavesRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
+  '/staff-register': typeof StaffRegisterRoute
   '/student': typeof StudentRouteWithChildren
   '/subadmin': typeof SubadminRouteWithChildren
   '/admin/audit': typeof AdminAuditRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/register'
     | '/setup'
+    | '/staff-register'
     | '/student'
     | '/subadmin'
     | '/admin/audit'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/register'
     | '/setup'
+    | '/staff-register'
     | '/admin/audit'
     | '/admin/departments'
     | '/admin/leaves'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/register'
     | '/setup'
+    | '/staff-register'
     | '/student'
     | '/subadmin'
     | '/admin/audit'
@@ -255,6 +267,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   RegisterRoute: typeof RegisterRoute
   SetupRoute: typeof SetupRoute
+  StaffRegisterRoute: typeof StaffRegisterRoute
   StudentRoute: typeof StudentRouteWithChildren
   SubadminRoute: typeof SubadminRouteWithChildren
 }
@@ -294,6 +307,13 @@ declare module '@tanstack/react-router' {
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff-register': {
+      id: '/staff-register'
+      path: '/staff-register'
+      fullPath: '/staff-register'
+      preLoaderRoute: typeof StaffRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/student': {
@@ -454,6 +474,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   RegisterRoute: RegisterRoute,
   SetupRoute: SetupRoute,
+  StaffRegisterRoute: StaffRegisterRoute,
   StudentRoute: StudentRouteWithChildren,
   SubadminRoute: SubadminRouteWithChildren,
 }

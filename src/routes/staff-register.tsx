@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Loader2, ShieldPlus } from "lucide-react";
 import { toast } from "sonner";
 import { requestStaffAccount } from "@/lib/admin.functions";
@@ -45,7 +45,6 @@ const EMPTY = {
 };
 
 function StaffRegister() {
-  const navigate = useNavigate();
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -188,9 +187,6 @@ function StaffRegister() {
           </form>
         )}
       </div>
-      <button type="button" className="sr-only" onClick={() => void navigate({ to: "/" })}>
-        home
-      </button>
     </div>
   );
 }
