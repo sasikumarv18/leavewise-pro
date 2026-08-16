@@ -72,7 +72,7 @@ function PendingPage() {
                   Requested {new Date(data.created_at).toLocaleDateString()}
                 </p>
               </div>
-              <StatusBadge status={data.status} />
+              <StatusBadge value={data.status} />
             </div>
             <p className="text-sm text-muted-foreground">
               {data.status === "PENDING"

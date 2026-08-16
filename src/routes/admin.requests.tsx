@@ -117,7 +117,7 @@ function AdminRequests() {
                       {r.message ?? "—"}
                     </td>
                     <td className="px-5 py-3">
-                      <StatusBadge status={r.status} />
+                      <StatusBadge value={r.status} />
                     </td>
                     <td className="px-5 py-3 text-right">
                       {r.status === "PENDING" ? (
