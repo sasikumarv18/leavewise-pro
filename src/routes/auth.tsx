@@ -133,6 +133,10 @@ function AuthPage() {
             <Link to="/register" className="font-medium text-primary hover:underline">
               Create an account
             </Link>
+            {" · "}Staff?{" "}
+            <Link to="/staff-register" className="font-medium text-primary hover:underline">
+              Request access
+            </Link>
           </p>
         </form>
       </div>

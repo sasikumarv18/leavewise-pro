@@ -1,5 +1,4 @@
-import {
-  UserCheck, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
@@ -10,6 +9,7 @@ import {
   FileClock,
   GraduationCap,
   LayoutDashboard,
+  UserCheck,
   LogOut,
   Menu,
   ScrollText,
