@@ -108,6 +108,14 @@ function Landing() {
                 variant="outline"
                 className="border-white/40 bg-transparent text-primary-foreground hover:bg-white/10 hover:text-primary-foreground"
               >
+                <Link to="/staff-register">Staff registration</Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white/40 bg-transparent text-primary-foreground hover:bg-white/10 hover:text-primary-foreground"
+              >
                 <Link to="/auth">Sign in</Link>
               </Button>
             </div>

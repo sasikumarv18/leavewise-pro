@@ -24,7 +24,13 @@ type AuthState = {
 const AuthContext = createContext<AuthState | null>(null);
 
 export const homeForRole = (role: AppRole | null): string =>
-  role === "ADMIN" ? "/admin" : role === "SUB_ADMIN" ? "/subadmin" : "/student";
+  role === "ADMIN"
+    ? "/admin"
+    : role === "SUB_ADMIN"
+      ? "/subadmin"
+      : role === "STUDENT"
+        ? "/student"
+        : "/pending";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);

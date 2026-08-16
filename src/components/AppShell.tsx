@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import {
+  UserCheck, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
@@ -48,6 +49,7 @@ const NAV: Record<AppRole, NavItem[]> = {
     { to: "/admin", label: "Dashboard", icon: BarChart3 },
     { to: "/admin/students", label: "Students", icon: Users },
     { to: "/admin/subadmins", label: "Sub-Admins", icon: ShieldCheck },
+    { to: "/admin/requests", label: "Access Requests", icon: UserCheck },
     { to: "/admin/leaves", label: "Leave Applications", icon: ClipboardList },
     { to: "/admin/departments", label: "Departments", icon: BookMarked },
     { to: "/admin/audit", label: "Audit Log", icon: ScrollText },
