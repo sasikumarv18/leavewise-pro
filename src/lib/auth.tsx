@@ -9,6 +9,7 @@ export type Profile = {
   full_name: string;
   email: string;
   status: "ACTIVE" | "INACTIVE";
+  department_id: string | null;
 };
 
 type AuthState = {
@@ -46,7 +47,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     const [p, r] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, email, status").eq("id", userId).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("id, full_name, email, status, department_id")
+        .eq("id", userId)
+        .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", userId).limit(1).maybeSingle(),
     ]);
     setProfile((p.data as Profile) ?? null);

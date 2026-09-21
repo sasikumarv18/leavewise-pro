@@ -7,6 +7,7 @@ const subAdminSchema = z.object({
   fullName: z.string().trim().min(3).max(100),
   email: z.string().trim().email().max(255),
   password: passwordSchema,
+  departmentId: z.string().uuid().optional(),
 });
 
 /** Public: student self-registration. Creates the auth user + profile + STUDENT role. */
@@ -102,7 +103,7 @@ export const adminExists = createServerFn({ method: "GET" }).handler(async () =>
 
 async function createStaffUser(
   role: "ADMIN" | "SUB_ADMIN",
-  data: { fullName: string; email: string; password: string },
+  data: { fullName: string; email: string; password: string; departmentId?: string },
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const created = await supabaseAdmin.auth.admin.createUser({
@@ -121,7 +122,12 @@ async function createStaffUser(
   const userId = created.data.user.id;
   await supabaseAdmin
     .from("profiles")
-    .insert({ id: userId, full_name: data.fullName, email: data.email.toLowerCase() });
+    .insert({
+      id: userId,
+      full_name: data.fullName,
+      email: data.email.toLowerCase(),
+      department_id: data.departmentId ?? null,
+    } as never);
   await supabaseAdmin.from("user_roles").insert({ user_id: userId, role });
   return { ok: true as const, userId };
 }
@@ -157,6 +163,33 @@ export const createSubAdmin = createServerFn({ method: "POST" })
     return result;
   });
 
+export const listStaffProfiles = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const [profiles, roles] = await Promise.all([
+      context.supabase
+        .from("profiles")
+        .select("id, full_name, email, status, department_id")
+        .order("full_name"),
+      context.supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("role", ["ADMIN", "SUB_ADMIN"]),
+    ]);
+    if (profiles.error) throw new Error(profiles.error.message);
+    if (roles.error) throw new Error(roles.error.message);
+    const roleByUser = new Map(roles.data.map((row: { user_id: string; role: string }) => [row.user_id, row.role]));
+    return {
+      staff: profiles.data
+        .filter((profile: { id: string }) => roleByUser.has(profile.id))
+        .map((profile: { id: string; full_name: string; email: string; status: string; department_id: string | null }) => ({
+          ...profile,
+          role: roleByUser.get(profile.id),
+        })),
+    };
+  });
+
 export const updateStaffUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -166,6 +199,7 @@ export const updateStaffUser = createServerFn({ method: "POST" })
         fullName: z.string().trim().min(3).max(100).optional(),
         status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
         newPassword: passwordSchema.optional(),
+        departmentId: z.string().uuid().nullable().optional(),
       })
       .parse(input),
   )
@@ -176,9 +210,14 @@ export const updateStaffUser = createServerFn({ method: "POST" })
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const patch: { full_name?: string; status?: "ACTIVE" | "INACTIVE" } = {};
+    const patch: {
+      full_name?: string;
+      status?: "ACTIVE" | "INACTIVE";
+      department_id?: string | null;
+    } = {};
     if (data.fullName) patch.full_name = data.fullName;
     if (data.status) patch.status = data.status;
+    if (data.departmentId !== undefined) patch.department_id = data.departmentId;
     if (Object.keys(patch).length > 0) {
       const res = await supabaseAdmin.from("profiles").update(patch).eq("id", data.userId);
       if (res.error) return { ok: false as const, error: res.error.message };
@@ -194,7 +233,11 @@ export const updateStaffUser = createServerFn({ method: "POST" })
       _action: "ACCOUNT_UPDATED",
       _entity: "profiles",
       _entity_id: data.userId,
-      _details: { status: data.status ?? null, password_reset: Boolean(data.newPassword) } as never,
+       _details: {
+         status: data.status ?? null,
+         department_id: data.departmentId ?? null,
+         password_reset: Boolean(data.newPassword),
+       } as never,
     });
     return { ok: true as const };
   });

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuery } from "@tanstack/react-query";
+import { fetchDepartments } from "@/lib/queries";
 import {
   Select,
   SelectContent,
@@ -42,12 +44,14 @@ const EMPTY = {
   password: "",
   requestedRole: "SUB_ADMIN" as "ADMIN" | "SUB_ADMIN",
   message: "",
+  departmentId: "",
 };
 
 function StaffRegister() {
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const departments = useQuery({ queryKey: ["departments"], queryFn: fetchDepartments });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,6 +63,7 @@ function StaffRegister() {
           email: form.email,
           password: form.password,
           requestedRole: form.requestedRole,
+          ...(form.departmentId ? { departmentId: form.departmentId } : {}),
           ...(form.message.trim() ? { message: form.message.trim() } : {}),
         },
       });
@@ -156,6 +161,17 @@ function StaffRegister() {
               <p className="text-xs text-muted-foreground">
                 Minimum 8 characters, including a letter and a number.
               </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Department</Label>
+              <Select value={form.departmentId} onValueChange={(departmentId) => setForm({ ...form, departmentId })}>
+                <SelectTrigger><SelectValue placeholder="Select a department" /></SelectTrigger>
+                <SelectContent>
+                  {(departments.data ?? []).map((department) => (
+                    <SelectItem key={department.id} value={department.id}>{department.department_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

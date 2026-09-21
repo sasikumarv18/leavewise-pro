@@ -7,6 +7,7 @@ import { adminExists, bootstrapAdmin } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { fetchDepartments } from "@/lib/queries";
 
 export const Route = createFileRoute("/setup")({
   head: () => ({
@@ -28,9 +29,10 @@ export const Route = createFileRoute("/setup")({
 
 function SetupPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ fullName: "", email: "", password: "" });
+  const [form, setForm] = useState({ fullName: "", email: "", password: "", departmentId: "" });
   const [busy, setBusy] = useState(false);
   const exists = useQuery({ queryKey: ["admin-exists"], queryFn: () => adminExists() });
+  const departments = useQuery({ queryKey: ["departments"], queryFn: fetchDepartments });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -107,6 +109,19 @@ function SetupPage() {
               <p className="text-xs text-muted-foreground">
                 Minimum 8 characters, including a letter and a number.
               </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Department</Label>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={form.departmentId}
+                onChange={(e) => setForm({ ...form, departmentId: e.target.value })}
+              >
+                <option value="">Select a department</option>
+                {(departments.data ?? []).map((department) => (
+                  <option key={department.id} value={department.id}>{department.department_name}</option>
+                ))}
+              </select>
             </div>
             <Button type="submit" className="w-full" disabled={busy}>
               {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
