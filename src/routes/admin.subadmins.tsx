@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Loader2, ShieldPlus } from "lucide-react";
+import { KeyRound, Loader2, Pencil, ShieldPlus } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -24,7 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { createSubAdmin, updateStaffUser } from "@/lib/admin.functions";
+import { createSubAdmin, listStaffProfiles, updateStaffUser } from "@/lib/admin.functions";
+import { fetchDepartments } from "@/lib/queries";
 
 export const Route = createFileRoute("/admin/subadmins")({
   head: () => ({
@@ -49,30 +50,24 @@ type StaffRow = {
   full_name: string;
   email: string;
   status: "ACTIVE" | "INACTIVE";
+  department_id: string | null;
+  role: "ADMIN" | "SUB_ADMIN";
 };
-
-async function fetchSubAdmins(): Promise<StaffRow[]> {
-  const roles = await supabase.from("user_roles").select("user_id, role").eq("role", "SUB_ADMIN");
-  if (roles.error) throw roles.error;
-  const ids = roles.data.map((r) => r.user_id);
-  if (ids.length === 0) return [];
-  const profiles = await supabase
-    .from("profiles")
-    .select("id, full_name, email, status")
-    .in("id", ids)
-    .order("full_name");
-  if (profiles.error) throw profiles.error;
-  return profiles.data as StaffRow[];
-}
 
 function AdminSubAdmins() {
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ fullName: "", email: "", password: "" });
+  const [form, setForm] = useState({ fullName: "", email: "", password: "", departmentId: "" });
   const [resetting, setResetting] = useState<StaffRow | null>(null);
+  const [editing, setEditing] = useState<StaffRow | null>(null);
+  const [editDepartment, setEditDepartment] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  const staff = useQuery({ queryKey: ["subadmins"], queryFn: fetchSubAdmins });
+  const departments = useQuery({ queryKey: ["departments"], queryFn: fetchDepartments });
+  const staff = useQuery({
+    queryKey: ["staff-profiles"],
+    queryFn: async () => (await listStaffProfiles()).staff as StaffRow[],
+  });
 
   const create = useMutation({
     mutationFn: () => createSubAdmin({ data: form }),
@@ -83,15 +78,20 @@ function AdminSubAdmins() {
       }
       toast.success("Sub-admin account created.");
       setCreating(false);
-      setForm({ fullName: "", email: "", password: "" });
-      void qc.invalidateQueries({ queryKey: ["subadmins"] });
+       setForm({ fullName: "", email: "", password: "", departmentId: "" });
+       void qc.invalidateQueries({ queryKey: ["staff-profiles"] });
     },
     onError: () =>
       toast.error("Password must be at least 8 characters with a letter and a number."),
   });
 
   const update = useMutation({
-    mutationFn: (input: { userId: string; status?: "ACTIVE" | "INACTIVE"; newPassword?: string }) =>
+    mutationFn: (input: {
+      userId: string;
+      status?: "ACTIVE" | "INACTIVE";
+      newPassword?: string;
+      departmentId?: string | null;
+    }) =>
       updateStaffUser({ data: input }),
     onSuccess: (res) => {
       if (!res.ok) {
@@ -99,9 +99,10 @@ function AdminSubAdmins() {
         return;
       }
       toast.success("Sub-admin account updated.");
-      setResetting(null);
+       setResetting(null);
+       setEditing(null);
       setNewPassword("");
-      void qc.invalidateQueries({ queryKey: ["subadmins"] });
+       void qc.invalidateQueries({ queryKey: ["staff-profiles"] });
     },
     onError: () => toast.error("The update could not be applied."),
   });
@@ -114,7 +115,7 @@ function AdminSubAdmins() {
     >
       <div className="surface-card overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <h2 className="font-display text-base font-semibold">Reviewer accounts</h2>
+            <h2 className="font-display text-base font-semibold">Staff accounts</h2>
           <Button onClick={() => setCreating(true)}>
             <ShieldPlus className="mr-2 size-4" /> Add sub-admin
           </Button>
@@ -123,15 +124,18 @@ function AdminSubAdmins() {
           <p className="px-5 py-12 text-center text-sm text-muted-foreground">Loading…</p>
         ) : (staff.data ?? []).length === 0 ? (
           <p className="px-5 py-14 text-center text-sm text-muted-foreground">
-            No sub-admins yet. Create one to start reviewing leave requests.
+            No staff accounts yet. Create a sub-admin to start reviewing leave requests.
           </p>
         ) : (
           <ul className="divide-y divide-border">
             {(staff.data ?? []).map((s) => (
               <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-                <div>
+                 <div>
                   <p className="font-medium">{s.full_name}</p>
                   <p className="text-sm text-muted-foreground">{s.email}</p>
+                   <p className="mt-1 text-xs text-muted-foreground">
+                     {s.role === "ADMIN" ? "Administrator" : "Sub-Admin"} · {departments.data?.find((d) => d.id === s.department_id)?.department_name ?? "No department"}
+                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge value={s.status} />
@@ -152,6 +156,16 @@ function AdminSubAdmins() {
                   <Button size="sm" variant="outline" onClick={() => setResetting(s)}>
                     <KeyRound className="mr-2 size-4" /> Reset password
                   </Button>
+                   <Button
+                     size="sm"
+                     variant="outline"
+                     onClick={() => {
+                       setEditing(s);
+                       setEditDepartment(s.department_id ?? "");
+                     }}
+                   >
+                     <Pencil className="mr-2 size-4" /> Edit
+                   </Button>
                 </div>
               </li>
             ))}
@@ -174,6 +188,20 @@ function AdminSubAdmins() {
                 value={form.fullName}
                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Department</Label>
+              <Select
+                value={form.departmentId}
+                onValueChange={(departmentId) => setForm({ ...form, departmentId })}
+              >
+                <SelectTrigger><SelectValue placeholder="Select a department" /></SelectTrigger>
+                <SelectContent>
+                  {(departments.data ?? []).map((department) => (
+                    <SelectItem key={department.id} value={department.id}>{department.department_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
@@ -233,6 +261,39 @@ function AdminSubAdmins() {
             >
               {update.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
               Update password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(editing)} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit staff profile</DialogTitle>
+            <DialogDescription>{editing?.full_name} · {editing?.email}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Department</Label>
+              <Select value={editDepartment || "none"} onValueChange={(value) => setEditDepartment(value === "none" ? "" : value)}>
+                <SelectTrigger><SelectValue placeholder="Select a department" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No department</SelectItem>
+                  {(departments.data ?? []).map((department) => (
+                    <SelectItem key={department.id} value={department.id}>{department.department_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button
+              disabled={update.isPending || !editing}
+              onClick={() => editing && update.mutate({ userId: editing.id, departmentId: editDepartment || null })}
+            >
+              {update.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Save department
             </Button>
           </DialogFooter>
         </DialogContent>

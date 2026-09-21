@@ -1,0 +1,4 @@
+- [ ] Add department fields to staff profiles
+- [ ] Add authorized server updates and staff listing data
+- [ ] Add staff-management editing UI
+- [ ] Verify database and preview flow
