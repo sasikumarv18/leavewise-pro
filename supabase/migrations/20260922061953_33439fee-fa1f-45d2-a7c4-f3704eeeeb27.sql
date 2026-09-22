@@ -1,0 +1,12 @@
+REVOKE EXECUTE ON FUNCTION public.enforce_leave_review() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.notify_leave_reviewed() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.notify_new_leave() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.prepare_leave_insert() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.protect_profile_fields() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.protect_student_fields() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.update_updated_at_column() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.log_audit(uuid, text, text, uuid, jsonb) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_active(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_active(uuid) TO authenticated;
