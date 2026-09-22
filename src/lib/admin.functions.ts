@@ -103,7 +103,7 @@ export const adminExists = createServerFn({ method: "GET" }).handler(async () =>
 
 async function createStaffUser(
   role: "ADMIN" | "SUB_ADMIN",
-  data: { fullName: string; email: string; password: string; departmentId?: string },
+  data: { fullName: string; email: string; password: string; departmentId?: string | undefined },
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const created = await supabaseAdmin.auth.admin.createUser({
