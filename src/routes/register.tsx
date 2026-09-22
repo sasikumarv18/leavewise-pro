@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { GraduationCap, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { registerStudent } from "@/lib/admin.functions";
 import { studentRegistrationSchema } from "@/lib/validation";
 import { fetchClasses, fetchDepartments } from "@/lib/queries";
@@ -85,8 +86,17 @@ function RegisterPage() {
         toast.error(res.error);
         return;
       }
-      toast.success("Registration successful. You can now sign in.");
-      void navigate({ to: "/auth" });
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: parsed.data.email.toLowerCase(),
+        password: parsed.data.password,
+      });
+      if (signInError) {
+        toast.success("Account created. Please sign in.");
+        void navigate({ to: "/auth" });
+        return;
+      }
+      toast.success("Account created. Welcome!");
+      void navigate({ to: "/student" });
     } catch {
       toast.error("Registration failed. Please try again.");
     } finally {
